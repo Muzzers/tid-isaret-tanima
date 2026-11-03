@@ -38,3 +38,18 @@ ml/.venv/Scripts/python.exe ml/extract_keypoints.py --split train --shard 0/3 --
 ```
 
 `val` ve `test` için aynı komutu `--split` değiştirerek çalıştırın. Ölçülen hız: 10 işçi ile ~0,77 sn/video (toplam ~36.300 video ≈ 7,7 saat tek makinede, 3 makinede ~2,6 saat).
+
+## Model karşılaştırma (İP3)
+
+İki model aynı veri, artırma ve değerlendirme ile eğitilir; tek değişken mimaridir.
+
+```bash
+# tek koşu
+ml/.venv/Scripts/python.exe ml/train_gru.py --model cnn_transformer --epochs 60 --name cnn226
+
+# iki model x 3 tohum, sonunda markdown tablo + experiments/ altina ozet JSON
+ml/.venv/Scripts/python.exe ml/compare_models.py --seeds 0,1,2 --epochs 60
+```
+
+Mac/Linux'ta aynı komutlar `ml/.venv/bin/python` ile. Eğitim cihazı sırayla CUDA → MPS → CPU seçilir.
+

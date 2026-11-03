@@ -2,10 +2,14 @@
 
 Girdi: extract_keypoints.py ciktisi (.npz). Normalizasyon PLAN.md / PDF denklem 1:
 omuz ortasina oteleme + omuz genisligine bolme. Test kumesi yalnizca egitim sonunda bir kez olculur.
+
+--model cnn_transformer ile PLAN.md IP3'teki karsilastirma modeli (1D-CNN + kucuk Transformer)
+egitilir; ayni veri, ayni artirma ve ayni degerlendirme kullanilir ki fark sadece mimariden gelsin.
 """
 import argparse
 import csv
 import json
+import math
 import time
 from pathlib import Path
 
@@ -113,6 +117,49 @@ class GRUNet(nn.Module):
         return self.out(h.mean(1))
 
 
+class PositionalEncoding(nn.Module):
+    """Transformer zamansal sirayi kendisi gormedigi icin sinus tabanli konum ekliyoruz."""
+
+    def __init__(self, d_model, max_len=512):
+        super().__init__()
+        pe = torch.zeros(max_len, d_model)
+        pos = torch.arange(max_len, dtype=torch.float32).unsqueeze(1)
+        div = torch.exp(torch.arange(0, d_model, 2, dtype=torch.float32) * (-math.log(10000.0) / d_model))
+        pe[:, 0::2] = torch.sin(pos * div)
+        pe[:, 1::2] = torch.cos(pos * div)
+        self.register_buffer("pe", pe.unsqueeze(0), persistent=False)
+
+    def forward(self, x):
+        return x + self.pe[:, : x.size(1)]
+
+
+class CNNTransformerNet(nn.Module):
+    """1D-CNN ile yerel hareket ozellikleri, ardindan kucuk Transformer ile zaman iliskileri.
+
+    GRU'ya gore fark: tekrarlayan katman yok, egitim paralellestirilebilir. Model yine de
+    hafif kalsin diye d_model=256 ve 2 katman secildi (~1,5 M parametre).
+    """
+
+    def __init__(self, n_cls, in_dim=100, d_model=256, nhead=4, layers=2, dropout=0.1):
+        super().__init__()
+        self.conv = nn.Sequential(
+            nn.Conv1d(in_dim, 128, 5, padding=2), nn.BatchNorm1d(128), nn.GELU(), nn.Dropout(dropout),
+            nn.Conv1d(128, d_model, 3, padding=1, stride=2), nn.BatchNorm1d(d_model), nn.GELU(),
+            nn.Conv1d(d_model, d_model, 3, padding=1), nn.BatchNorm1d(d_model), nn.GELU(),
+        )
+        self.pos = PositionalEncoding(d_model)
+        layer = nn.TransformerEncoderLayer(d_model, nhead, dim_feedforward=d_model * 2, dropout=dropout,
+                                           activation="gelu", batch_first=True, norm_first=True)
+        self.transformer = nn.TransformerEncoder(layer, layers, enable_nested_tensor=False)
+        self.norm = nn.LayerNorm(d_model)
+        self.out = nn.Linear(d_model, n_cls)
+
+    def forward(self, x):
+        h = self.conv(x.transpose(1, 2)).transpose(1, 2)  # [B, T/2, d_model]
+        h = self.transformer(self.pos(h))
+        return self.out(self.norm(h.mean(1)))
+
+
 def batches(X, y, bs, rng, train):
     order = rng.permutation(len(X)) if train else np.arange(len(X))
     for i in range(0, len(X), bs):
@@ -137,9 +184,12 @@ def evaluate(model, X, y, dev):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--classes", default="all", help="virgullu sinif no listesi veya 'all' (226)")
+    ap.add_argument("--model", choices=["gru", "cnn_transformer"], default="gru",
+                    help="gru = BiGRU temel model, cnn_transformer = karsilastirma modeli")
     ap.add_argument("--kp", default=str(ROOT / "data" / "keypoints"))
     ap.add_argument("--hidden", type=int, default=256)
     ap.add_argument("--batch", type=int, default=128)
+    ap.add_argument("--lr", type=float, default=2e-3)
     ap.add_argument("--data", default=str(ROOT / "data" / "archive (1)"))
     ap.add_argument("--epochs", type=int, default=40)
     ap.add_argument("--seed", type=int, default=0)
@@ -154,9 +204,23 @@ def main():
     for s, (X, y) in data.items():
         print(s, len(X), flush=True)
 
-    dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = GRUNet(len(classes), hidden=a.hidden).to(dev)
-    opt = torch.optim.AdamW(model.parameters(), lr=2e-3, weight_decay=1e-2)
+    # Mac'te MPS, egitim makinesinde CUDA; ikisi de yoksa CPU.
+    if torch.cuda.is_available():
+        dev = torch.device("cuda")
+    elif torch.backends.mps.is_available():
+        dev = torch.device("mps")
+    else:
+        dev = torch.device("cpu")
+    if a.model == "gru":
+        model = GRUNet(len(classes), hidden=a.hidden)
+        arch = f"BiGRU-2x{a.hidden}"
+    else:
+        model = CNNTransformerNet(len(classes))
+        arch = "1D-CNN+Transformer"
+    model = model.to(dev)
+    n_params = sum(p.numel() for p in model.parameters())
+    print(f"model {arch} | parametre {n_params / 1e6:.2f} M | cihaz {dev}", flush=True)
+    opt = torch.optim.AdamW(model.parameters(), lr=a.lr, weight_decay=1e-2)
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, a.epochs)
     best, best_state = 0.0, None
     t0 = time.time()
@@ -178,15 +242,17 @@ def main():
     model.load_state_dict(best_state)
     ck = ROOT / "checkpoints"
     ck.mkdir(exist_ok=True)
-    torch.save(dict(state=best_state, hidden=a.hidden, n_classes=len(classes), classes=classes, t_fixed=T_FIXED),
-               ck / f"{a.name}.pt")
+    torch.save(dict(state=best_state, hidden=a.hidden, n_classes=len(classes), classes=classes, t_fixed=T_FIXED,
+                    model_type=a.model, arch=arch), ck / f"{a.name}.pt")
     test = evaluate(model, *data["test"], dev)
     print(f"EN IYI val {best:.3f} | TEST {test:.3f} | sure {time.time() - t0:.0f}s")
     out = ROOT / "experiments"
     out.mkdir(exist_ok=True)
     (out / f"{time.strftime('%Y%m%d')}_{a.name}.json").write_text(
-        json.dumps(dict(model=f"BiGRU-2x{a.hidden}", n_classes=len(classes), classes=classes if len(classes) < 30 else "all", epochs=a.epochs, seed=a.seed,
-                        n_train=len(data["train"][1]), best_val=best, test=test, device=str(dev)), indent=2),
+        json.dumps(dict(model=arch, model_type=a.model, params=n_params, n_classes=len(classes),
+                        classes=classes if len(classes) < 30 else "all", epochs=a.epochs, seed=a.seed, lr=a.lr,
+                        n_train=len(data["train"][1]), best_val=best, test=test, device=str(dev),
+                        duration_s=round(time.time() - t0)), indent=2),
         encoding="utf-8")
 
 

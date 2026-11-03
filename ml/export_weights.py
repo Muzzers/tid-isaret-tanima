@@ -8,7 +8,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from train_gru import GRUNet, ROOT, batches, load_split
+from train_gru import CNNTransformerNet, GRUNet, ROOT, batches, load_split
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--name", default="gru226")
@@ -16,7 +16,10 @@ ap.add_argument("--n_test", type=int, default=0, help="0 = tum test seti")
 a = ap.parse_args()
 
 ck = torch.load(ROOT / "checkpoints" / f"{a.name}.pt", map_location="cpu")
-model = GRUNet(ck["n_classes"], hidden=ck["hidden"])
+if ck.get("model_type") == "cnn_transformer":
+    model = CNNTransformerNet(ck["n_classes"])
+else:
+    model = GRUNet(ck["n_classes"], hidden=ck["hidden"])
 model.load_state_dict(ck["state"])
 model.eval()
 w = {k: v.numpy() for k, v in ck["state"].items()}
