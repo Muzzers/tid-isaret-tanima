@@ -15,12 +15,11 @@
 - Eğitim cihazı seçimi: CUDA yoksa MPS (Mac), o da yoksa CPU. Aynı kod hem kendi Mac'imde
   hem ekibin NVIDIA makinesinde çalışsın diye.
 
-**Ölçülen / doğrulanan**
-- Parametre sayısı: BiGRU-2x256 ≈ 2,11 M, 1D-CNN+Transformer ≈ 1,47 M (10 MB bütçesinin altında).
-- 226 sınıflık gerçek nokta verisiyle (28.132 train / 4.418 val / 3.741 test) 5 epoch hızlı kontrol koşusu:
-  - `BiGRU-2x256`: en iyi val %82,1 | test %80,4 (macro F1 %80,3)
-  - `1D-CNN+Transformer`: en iyi val %81,7 | test %81,5 (macro F1 %81,2)
-- `ml/error_analysis.py` eklendi: kayıtlı checkpoint üzerinden sınıf bazlı F1, en çok karışan 10 işaret çifti tablosu, karışıklık matrisi (`cm_*.png`) ve eğitim eğrisi (`curve_*.png`) üretiyor.
+**Ölçülen / doğrulanan (226 sınıf, 28.132 train / 4.418 val / 3.741 test, 60 epoch, seed 0)**
+- `BiGRU-2x256` (2,11 M parametre): en iyi val **%89,25** | test **%88,24** | macro F1 **%88,09** (M4 MPS, 4658 sn)
+- `1D-CNN+Transformer` (1,47 M parametre): en iyi val **%90,02** | test **%88,83** | macro F1 **%88,61** (M4 MPS, 1089 sn)
+- `1D-CNN+Transformer`, BiGRU'ya göre %30 daha az parametreyle hem doğrulukta (+0,59 puan test) hem eğitim hızında (~4,3 kat daha hızlı) öne geçti.
+- `ml/error_analysis.py` ile iki modelin de test kümesi hata analizi, en çok karışan 10 işaret çifti (`ağır↔hafif`, `sabun↔ayakkabı`, `okul↔çorba`, `dede↔dolu`), F1 skoru en düşük 10 sınıf tablosu, karışıklık matrisi (`cm_*.png`) ve eğitim eğrisi (`curve_*.png`) üretildi.
 
 **Sırada**
-- 60 epoch tam eğitim ve 3 tohumlu (`seed 0,1,2`) karşılaştırma tablosunun `experiments/` altına eklenmesi.
+- Ek tohumlarla (`seed 1,2`) standart sapma aralığının çıkarılması ve ara rapor / sunum tablolarının güncellenmesi.
