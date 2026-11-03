@@ -223,6 +223,7 @@ def main():
     opt = torch.optim.AdamW(model.parameters(), lr=a.lr, weight_decay=1e-2)
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, a.epochs)
     best, best_state = 0.0, None
+    history = []
     t0 = time.time()
     for ep in range(1, a.epochs + 1):
         model.train()
@@ -234,10 +235,12 @@ def main():
             opt.step()
             tot += loss.item() * len(yb)
         sched.step()
+        tr_loss = tot / len(data["train"][1])
         va = evaluate(model, *data["val"], dev)
+        history.append(dict(ep=ep, loss=round(tr_loss, 4), val=round(va, 4)))
         if va > best:
             best, best_state = va, {k: v.cpu().clone() for k, v in model.state_dict().items()}
-        print(f"ep {ep:02d} loss {tot / len(data['train'][1]):.3f} val {va:.3f}", flush=True)
+        print(f"ep {ep:02d} loss {tr_loss:.3f} val {va:.3f}", flush=True)
 
     model.load_state_dict(best_state)
     ck = ROOT / "checkpoints"
@@ -252,7 +255,7 @@ def main():
         json.dumps(dict(model=arch, model_type=a.model, params=n_params, n_classes=len(classes),
                         classes=classes if len(classes) < 30 else "all", epochs=a.epochs, seed=a.seed, lr=a.lr,
                         n_train=len(data["train"][1]), best_val=best, test=test, device=str(dev),
-                        duration_s=round(time.time() - t0)), indent=2),
+                        duration_s=round(time.time() - t0), history=history), indent=2),
         encoding="utf-8")
 
 

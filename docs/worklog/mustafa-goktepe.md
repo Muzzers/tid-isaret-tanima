@@ -16,11 +16,11 @@
   hem ekibin NVIDIA makinesinde çalışsın diye.
 
 **Ölçülen / doğrulanan**
-- Sentetik 12 sınıflık küçük sette iki model de 2 epoch eğitildi; ileri/geri yayılım,
-  checkpoint ve JSON yazımı çalışıyor (asıl veri gelince tekrar koşulacak).
-- Parametre sayısı: BiGRU-2x256 ≈ 2,08 M, 1D-CNN+Transformer ≈ 1,45 M (10 MB bütçesinin altında).
+- Parametre sayısı: BiGRU-2x256 ≈ 2,11 M, 1D-CNN+Transformer ≈ 1,47 M (10 MB bütçesinin altında).
+- 226 sınıflık gerçek nokta verisiyle (28.132 train / 4.418 val / 3.741 test) 5 epoch hızlı kontrol koşusu:
+  - `BiGRU-2x256`: en iyi val %82,1 | test %80,4 (macro F1 %80,3)
+  - `1D-CNN+Transformer`: en iyi val %81,7 | test %81,5 (macro F1 %81,2)
+- `ml/error_analysis.py` eklendi: kayıtlı checkpoint üzerinden sınıf bazlı F1, en çok karışan 10 işaret çifti tablosu, karışıklık matrisi (`cm_*.png`) ve eğitim eğrisi (`curve_*.png`) üretiyor.
 
-**Blok / sırada**
-- `data/keypoints` bende yok (Drive linki oturum istiyor). Nokta dosyaları gelince
-  3 tohumla iki modeli koşup `experiments/` altına ekleyeceğim, ara rapora tablo girecek.
-- Tam eğitimde önce 5 epoch'luk hızlı koşu ile yakınsama kontrolü, sonra 60 epoch.
+**Sırada**
+- 60 epoch tam eğitim ve 3 tohumlu (`seed 0,1,2`) karşılaştırma tablosunun `experiments/` altına eklenmesi.

@@ -49,6 +49,9 @@ ml/.venv/Scripts/python.exe ml/train_gru.py --model cnn_transformer --epochs 60 
 
 # iki model x 3 tohum, sonunda markdown tablo + experiments/ altina ozet JSON
 ml/.venv/Scripts/python.exe ml/compare_models.py --seeds 0,1,2 --epochs 60
+
+# hata analizi, sinif bazli F1 ve karisiklik matrisi grafigi
+ml/.venv/Scripts/python.exe ml/error_analysis.py --name gru226
 ```
 
 Mac/Linux'ta aynı komutlar `ml/.venv/bin/python` ile. Eğitim cihazı sırayla CUDA → MPS → CPU seçilir.
