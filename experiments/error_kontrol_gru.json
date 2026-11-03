@@ -1,0 +1,182 @@
+{
+  "name": "kontrol_gru",
+  "arch": "BiGRU-2x256",
+  "split": "test",
+  "n_samples": 3741,
+  "accuracy": 0.8043,
+  "macro_f1": 0.8028,
+  "worst_10": [
+    {
+      "idx": 172,
+      "support": 11,
+      "precision": 0.6667,
+      "recall": 0.1818,
+      "f1": 0.2857,
+      "class_id": 172,
+      "name": "seker"
+    },
+    {
+      "idx": 184,
+      "support": 17,
+      "precision": 0.8,
+      "recall": 0.2353,
+      "f1": 0.3636,
+      "class_id": 184,
+      "name": "soz"
+    },
+    {
+      "idx": 166,
+      "support": 17,
+      "precision": 0.4118,
+      "recall": 0.4118,
+      "f1": 0.4118,
+      "class_id": 166,
+      "name": "sabun"
+    },
+    {
+      "idx": 175,
+      "support": 17,
+      "precision": 0.5,
+      "recall": 0.3529,
+      "f1": 0.4138,
+      "class_id": 175,
+      "name": "sen"
+    },
+    {
+      "idx": 111,
+      "support": 17,
+      "precision": 0.6,
+      "recall": 0.3529,
+      "f1": 0.4444,
+      "class_id": 111,
+      "name": "kim"
+    },
+    {
+      "idx": 178,
+      "support": 17,
+      "precision": 0.4091,
+      "recall": 0.5294,
+      "f1": 0.4615,
+      "class_id": 178,
+      "name": "ses"
+    },
+    {
+      "idx": 51,
+      "support": 16,
+      "precision": 0.4,
+      "recall": 0.625,
+      "f1": 0.4878,
+      "class_id": 51,
+      "name": "devlet"
+    },
+    {
+      "idx": 163,
+      "support": 17,
+      "precision": 0.8571,
+      "recall": 0.3529,
+      "f1": 0.5,
+      "class_id": 163,
+      "name": "psikoloji"
+    },
+    {
+      "idx": 182,
+      "support": 16,
+      "precision": 0.5833,
+      "recall": 0.4375,
+      "f1": 0.5,
+      "class_id": 182,
+      "name": "siz"
+    },
+    {
+      "idx": 47,
+      "support": 14,
+      "precision": 1.0,
+      "recall": 0.3571,
+      "f1": 0.5263,
+      "class_id": 47,
+      "name": "dakika"
+    }
+  ],
+  "confused_pairs": [
+    {
+      "true_id": 184,
+      "true_name": "soz",
+      "pred_id": 178,
+      "pred_name": "ses",
+      "count": 10,
+      "true_total": 17
+    },
+    {
+      "true_id": 166,
+      "true_name": "sabun",
+      "pred_id": 17,
+      "pred_name": "ayakkabi",
+      "count": 9,
+      "true_total": 17
+    },
+    {
+      "true_id": 93,
+      "true_name": "hoscakal",
+      "pred_id": 65,
+      "pred_name": "evet",
+      "count": 7,
+      "true_total": 17
+    },
+    {
+      "true_id": 178,
+      "true_name": "ses",
+      "pred_id": 22,
+      "pred_name": "bakmak",
+      "count": 6,
+      "true_total": 17
+    },
+    {
+      "true_id": 6,
+      "true_name": "agir",
+      "pred_id": 79,
+      "pred_name": "hafif",
+      "count": 6,
+      "true_total": 17
+    },
+    {
+      "true_id": 140,
+      "true_name": "ocak",
+      "pred_id": 194,
+      "pred_name": "terazi",
+      "count": 6,
+      "true_total": 17
+    },
+    {
+      "true_id": 134,
+      "true_name": "mudur",
+      "pred_id": 51,
+      "pred_name": "devlet",
+      "count": 6,
+      "true_total": 17
+    },
+    {
+      "true_id": 144,
+      "true_name": "okul",
+      "pred_id": 43,
+      "pred_name": "corba",
+      "count": 5,
+      "true_total": 17
+    },
+    {
+      "true_id": 165,
+      "true_name": "saat",
+      "pred_id": 52,
+      "pred_name": "doktor",
+      "count": 5,
+      "true_total": 17
+    },
+    {
+      "true_id": 175,
+      "true_name": "sen",
+      "pred_id": 127,
+      "pred_name": "masa",
+      "count": 5,
+      "true_total": 17
+    }
+  ]
+}

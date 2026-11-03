@@ -1,0 +1,42 @@
+{
+  "model": "BiGRU-2x256",
+  "model_type": "gru",
+  "params": 2114018,
+  "n_classes": 226,
+  "classes": "all",
+  "epochs": 5,
+  "seed": 0,
+  "lr": 0.002,
+  "n_train": 28132,
+  "best_val": 0.8205070167496605,
+  "test": 0.8043303929430633,
+  "device": "mps",
+  "duration_s": 294,
+  "history": [
+    {
+      "ep": 1,
+      "loss": 3.6807,
+      "val": 0.5041
+    },
+    {
+      "ep": 2,
+      "loss": 2.199,
+      "val": 0.7107
+    },
+    {
+      "ep": 3,
+      "loss": 1.7003,
+      "val": 0.7841
+    },
+    {
+      "ep": 4,
+      "loss": 1.4424,
+      "val": 0.8078
+    },
+    {
+      "ep": 5,
+      "loss": 1.3178,
+      "val": 0.8205
+    }
+  ]
+}

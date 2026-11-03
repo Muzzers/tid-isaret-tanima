@@ -1,0 +1,42 @@
+{
+  "model": "1D-CNN+Transformer",
+  "model_type": "cnn_transformer",
+  "params": 1473634,
+  "n_classes": 226,
+  "classes": "all",
+  "epochs": 5,
+  "seed": 0,
+  "lr": 0.002,
+  "n_train": 28132,
+  "best_val": 0.8171118153010412,
+  "test": 0.8144881047848169,
+  "device": "mps",
+  "duration_s": 86,
+  "history": [
+    {
+      "ep": 1,
+      "loss": 3.6829,
+      "val": 0.4962
+    },
+    {
+      "ep": 2,
+      "loss": 2.3598,
+      "val": 0.6689
+    },
+    {
+      "ep": 3,
+      "loss": 1.8582,
+      "val": 0.708
+    },
+    {
+      "ep": 4,
+      "loss": 1.5642,
+      "val": 0.7997
+    },
+    {
+      "ep": 5,
+      "loss": 1.4075,
+      "val": 0.8171
+    }
+  ]
+}
