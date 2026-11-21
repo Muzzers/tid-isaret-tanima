@@ -147,13 +147,19 @@ class CameraPlatformView(
             result.success(mapOf("error" to "El görünmedi. Ellerinizin kamerada göründüğünden emin olun."))
             return
         }
+        // AUTSL kliplerinde el ilk kareden son kareye kadar gorunuyor; canli kayitta dugmeye basma ile
+        // isarete baslama arasindaki elsiz kareler modelin gormedigi bir girdi. Kayit elin ilk ve son
+        // gorundugu kareye (+-1) kirpilir (ml/features.py el_gorunen_kisim ile ayni).
+        val elVar = frames.indices.filter { i -> frames[i].hands.any { it != null } }
+        val kirpik = frames.subList(maxOf(elVar.first() - 1, 0), minOf(elVar.last() + 2, frames.size))
         classifyExec.execute {
             val reply: Map<String, Any> = try {
                 val c = classifier ?: SignClassifier(context).also { classifier = it }
                 val t0 = System.nanoTime()
-                val top = c.classify(frames)
+                val top = c.classify(if (kirpik.size >= 8) kirpik else frames)
                 mapOf(
                     "frames" to frames.size,
+                    "usedFrames" to (if (kirpik.size >= 8) kirpik.size else frames.size),
                     "handFrames" to handFrames,
                     "ms" to (System.nanoTime() - t0) / 1_000_000,
                     "top" to top.map { mapOf("name" to it.name, "p" to it.prob.toDouble(), "id" to it.index) },

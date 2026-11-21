@@ -270,7 +270,7 @@ class _TanimaEkraniState extends State<TanimaEkrani> {
       for (final (i, t) in top.indexed) _AdaySatiri(sira: i + 1, ad: '${t['name']}', p: (t['p'] as num).toDouble()),
       const SizedBox(height: 6),
       Text(
-        '${r['frames']} kare'
+        '${r['frames']} kare${r['usedFrames'] != null && r['usedFrames'] != r['frames'] ? ' (modele ${r['usedFrames']})' : ''}'
         '${r['handFrames'] != null ? ' · elin göründüğü ${r['handFrames']}' : ''} · ${r['ms']} ms',
         style: tema.textTheme.bodySmall?.copyWith(color: tema.colorScheme.onSurfaceVariant),
       ),
