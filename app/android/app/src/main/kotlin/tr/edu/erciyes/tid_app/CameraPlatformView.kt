@@ -20,10 +20,11 @@ import java.util.concurrent.Executors
 class CameraViewFactory(
     private val owner: LifecycleOwner,
     private val events: () -> EventChannel.EventSink?,
-    private val onCreated: (CameraPlatformView?) -> Unit,
+    private val onCreated: (CameraPlatformView) -> Unit,
+    private val onDisposed: (CameraPlatformView) -> Unit,
 ) : PlatformViewFactory(StandardMessageCodec.INSTANCE) {
     override fun create(context: Context, viewId: Int, args: Any?): PlatformView =
-        CameraPlatformView(context, owner, events, onCreated).also { onCreated(it) }
+        CameraPlatformView(context, owner, events, onDisposed).also { onCreated(it) }
 }
 
 /** CameraX onizleme + MediaPipe cikarimi + nokta kaplamasi. Kare akisi Dart'a gitmez, yalnizca ozet (FPS, el sayisi) gider. */
@@ -31,7 +32,7 @@ class CameraPlatformView(
     private val context: Context,
     private val owner: LifecycleOwner,
     private val events: () -> EventChannel.EventSink?,
-    private val onDisposed: (CameraPlatformView?) -> Unit,
+    private val onDisposed: (CameraPlatformView) -> Unit,
 ) : PlatformView {
     private val root = FrameLayout(context)
     private val preview = PreviewView(context).apply { implementationMode = PreviewView.ImplementationMode.COMPATIBLE }
@@ -41,6 +42,7 @@ class CameraPlatformView(
     private val recLock = Any()
     @Volatile private var recording = false
     private val rec = ArrayList<SignClassifier.Sample>()
+    private var lastRec: List<SignClassifier.Sample> = emptyList()  // gonullu testinde dosyaya yazilir
     private var classifier: SignClassifier? = null
     private val classifyExec = Executors.newSingleThreadExecutor()
     @Volatile private var continuous = false
@@ -112,7 +114,7 @@ class CameraPlatformView(
                 val seg = mapOf(
                     "frames" to frames.size,
                     "ms" to (System.nanoTime() - t0) / 1_000_000,
-                    "top" to top.map { mapOf("name" to it.name, "p" to it.prob.toDouble()) },
+                    "top" to top.map { mapOf("name" to it.name, "p" to it.prob.toDouble(), "id" to it.index) },
                 )
                 ContextCompat.getMainExecutor(context).execute { events()?.success(mapOf("segment" to seg)) }
             } catch (e: Exception) {
@@ -133,8 +135,16 @@ class CameraPlatformView(
         }
         recording = false
         val frames = synchronized(recLock) { ArrayList(rec) }
+        lastRec = frames
         if (frames.size < 8) {
-            result.success(mapOf("error" to "Cok az kare (${frames.size}); isareti kamerada biraz daha uzun yapin."))
+            result.success(mapOf("error" to "Çok az kare (${frames.size}); işareti kamerada biraz daha uzun yapın."))
+            return
+        }
+        // El neredeyse hic gorunmediyse modele vermiyoruz: model "eller yok" girdilerinde de bazen
+        // yuksek guvenle bir kelime seciyor (ml/calibrate_threshold.py, negatif ornekler).
+        val handFrames = frames.count { f -> f.hands.any { it != null } }
+        if (handFrames < frames.size / 5) {
+            result.success(mapOf("error" to "El görünmedi. Ellerinizin kamerada göründüğünden emin olun."))
             return
         }
         classifyExec.execute {
@@ -144,13 +154,47 @@ class CameraPlatformView(
                 val top = c.classify(frames)
                 mapOf(
                     "frames" to frames.size,
+                    "handFrames" to handFrames,
                     "ms" to (System.nanoTime() - t0) / 1_000_000,
-                    "top" to top.map { mapOf("name" to it.name, "p" to it.prob.toDouble()) },
+                    "top" to top.map { mapOf("name" to it.name, "p" to it.prob.toDouble(), "id" to it.index) },
                 )
             } catch (e: Exception) {
                 mapOf("error" to "Siniflandirma hatasi: ${e.message}")
             }
             ContextCompat.getMainExecutor(context).execute { result.success(reply) }
+        }
+    }
+
+    /**
+     * Gonullu testi: son kaydedilen hareketi (yalnizca nokta koordinatlari, goruntu yok) ve tahmini
+     * JSON olarak uygulamanin dosya klasorune yazar. Bilgisayara almak icin:
+     *   adb pull /sdcard/Android/data/tr.edu.erciyes.tid_app/files/gonullu_testi
+     * Python tarafinda ml/live_analysis.py okur.
+     */
+    fun saveLast(info: Map<*, *>, result: MethodChannel.Result) {
+        val frames = lastRec
+        if (frames.isEmpty()) { result.success(null); return }
+        classifyExec.execute {
+            val path = try {
+                val dir = java.io.File(context.getExternalFilesDir(null), "gonullu_testi").apply { mkdirs() }
+                val who = (info["katilimci"] as? String ?: "anonim").replace(Regex("[^A-Za-z0-9_-]"), "_")
+                val oturum = (info["oturum"] as? String ?: "").ifEmpty { System.currentTimeMillis().toString() }
+                val f = java.io.File(dir, "${who}_${oturum}_${info["sira"] ?: 0}.json")
+                val js = org.json.JSONObject()
+                info.forEach { (k, v) -> js.put(k.toString(), org.json.JSONObject.wrap(v)) }
+                js.put("w", frames[0].w); js.put("h", frames[0].h); js.put("on_kamera", front)
+                val arr = org.json.JSONArray()
+                for (fr in frames) {
+                    val o = org.json.JSONObject()
+                    o.put("el", org.json.JSONArray(fr.hands.map { h -> h?.let { org.json.JSONArray(it.map(Float::toDouble)) } ?: org.json.JSONObject.NULL }))
+                    o.put("govde", fr.pose?.let { org.json.JSONArray(it.map(Float::toDouble)) } ?: org.json.JSONObject.NULL)
+                    arr.put(o)
+                }
+                js.put("kareler", arr)
+                f.writeText(js.toString())
+                f.absolutePath
+            } catch (e: Exception) { null }
+            ContextCompat.getMainExecutor(context).execute { result.success(path) }
         }
     }
 
@@ -188,6 +232,6 @@ class CameraPlatformView(
         classifyExec.execute { classifier?.close() }
         classifyExec.shutdown()
         executor.shutdown() // kuyruktaki close() calisir
-        onDisposed(null)
+        onDisposed(this)
     }
 }
