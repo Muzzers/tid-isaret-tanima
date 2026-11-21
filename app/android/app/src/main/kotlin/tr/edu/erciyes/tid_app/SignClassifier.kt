@@ -31,7 +31,7 @@ class SignClassifier(context: Context) {
             .map(FileChannel.MapMode.READ_ONLY, fd.startOffset, fd.declaredLength)
         interpreter = Interpreter(map, Interpreter.Options().setNumThreads(2))
         names = context.assets.open("signs.csv").bufferedReader().readLines().drop(1)
-            .map { it.split(",")[1].replace('_', ' ') }
+            .map { line -> line.split(",").let { c -> c.getOrNull(3) ?: c[1].replace('_', ' ') } }  // 4. sutun: Turkce yazim
     }
 
     fun classify(frames: List<Sample>, topK: Int = 3): List<Prediction> {

@@ -37,6 +37,14 @@ class LandmarkPipeline(private val context: Context, val mode: Int) {
     private val poseIdx = intArrayOf(0, 11, 12, 13, 14, 15, 16)
     private var lastTs = -1L
 
+    /**
+     * Govde noktalari her POSE_EVERY karede bir cikarilir, aradaki karelerde son deger kullanilir.
+     * Govde yavas hareket ettigi icin dogruluk degismiyor (10 FPS'e seyreltilmis AUTSL testinde
+     * her karede %87,22, iki karede bir %87,22); el modeli her karede calismaya devam eder.
+     */
+    private var frameNo = 0L
+    private var lastPose: FloatArray? = null
+
     /** GPU kurulamazsa CPU'ya duser; hangisinin calistigi `delegate` ile bildirilir. */
     var delegate = when (mode) { 0 -> "El CPU / Poz CPU"; 1 -> "El GPU / Poz CPU"; else -> "El GPU / Poz GPU" }
         private set
@@ -114,7 +122,8 @@ class LandmarkPipeline(private val context: Context, val mode: Int) {
             }
             Pair(slots.toList(), (System.nanoTime() - t) / 1_000_000)
         })
-        val poseF = poseExec.submit(Callable {
+        val runPose = frameNo++ % POSE_EVERY == 0L || lastPose == null
+        val poseF = if (!runPose) null else poseExec.submit(Callable {
             val t = System.nanoTime()
             val res = pose.detectForVideo(mpImage, ts)
             val arr = res.landmarks().firstOrNull()?.let { lms ->
@@ -123,10 +132,12 @@ class LandmarkPipeline(private val context: Context, val mode: Int) {
             Pair(arr, (System.nanoTime() - t) / 1_000_000)
         })
         val (hands, handMs) = handF.get()
-        val (poseArr, poseMs) = poseF.get()
+        val (poseArr, poseMs) = poseF?.get()?.also { lastPose = it.first } ?: Pair(lastPose, 0L)
         val total = (System.nanoTime() - t0) / 1_000_000
         return Frame(hands, poseArr, upright.width, upright.height, total, (tConv - t0) / 1_000_000, handMs, poseMs)
     }
+
+    companion object { const val POSE_EVERY = 2L }
 
     fun close() {
         handExec.submit { hand.close() }.get(); poseExec.submit { pose.close() }.get()

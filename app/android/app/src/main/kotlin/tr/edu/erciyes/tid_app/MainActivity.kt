@@ -16,6 +16,8 @@ class MainActivity : FlutterActivity() {
     private var sink: EventChannel.EventSink? = null
     private var pendingPermission: MethodChannel.Result? = null
     private var cameraView: CameraPlatformView? = null
+    private var tts: android.speech.tts.TextToSpeech? = null
+    private var ttsReady = false
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -45,6 +47,14 @@ class MainActivity : FlutterActivity() {
                 result.success(null)
             } else if (call.method == "selftest") {
                 runSelfTest { result.success(it) }
+            } else if (call.method == "signs") {
+                // sinif no sirasiyla Turkce yazim (signs.csv 4. sutun)
+                result.success(assets.open("signs.csv").bufferedReader().readLines().drop(1)
+                    .map { line -> line.split(",").let { c -> c.getOrNull(3) ?: c[1].replace('_', ' ') } })
+            } else if (call.method == "saveLast") {
+                cameraView?.saveLast(call.arguments as? Map<*, *> ?: emptyMap<String, Any>(), result) ?: result.success(null)
+            } else if (call.method == "speak") {
+                speak(call.arguments as? String ?: "", result)
             } else if (call.method == "record") {
                 cameraView?.record(call.arguments as? Boolean ?: false, result) ?: result.success(null)
             } else result.notImplemented()
@@ -56,7 +66,9 @@ class MainActivity : FlutterActivity() {
         if (intent.getBooleanExtra("selftest", false)) runSelfTest { }
 
         flutterEngine.platformViewsController.registry
-            .registerViewFactory("tid/camera_view", CameraViewFactory(this, { sink }) { cameraView = it })
+            .registerViewFactory("tid/camera_view", CameraViewFactory(this, { sink },
+                onCreated = { cameraView = it },
+                onDisposed = { if (cameraView === it) cameraView = null }))
     }
 
     /** Kotlin on isleme + LiteRT'in Python ile ayni sonucu verdigini gomulu 200 test ornegiyle dogrular. */
@@ -125,6 +137,26 @@ class MainActivity : FlutterActivity() {
                 Log.i("TIDVTEST", "BITTI mod=$mode dogruluk=$correct/$n")
             } catch (e: Exception) { Log.e("TIDVTEST", "hata: $e") }
         }.start()
+    }
+
+    /** Metni cihazin Turkce ses motoruyla okur (internet gerekmez; ses paketi yuklu olmalidir). */
+    private fun speak(text: String, result: MethodChannel.Result) {
+        val say = {
+            val ok = ttsReady && tts!!.speak(text, android.speech.tts.TextToSpeech.QUEUE_FLUSH, null, "tid") ==
+                android.speech.tts.TextToSpeech.SUCCESS
+            result.success(ok)
+        }
+        if (tts != null) { say(); return }
+        tts = android.speech.tts.TextToSpeech(this) { status ->
+            ttsReady = status == android.speech.tts.TextToSpeech.SUCCESS &&
+                tts!!.setLanguage(java.util.Locale.forLanguageTag("tr-TR")) >= android.speech.tts.TextToSpeech.LANG_AVAILABLE
+            runOnUiThread { say() }
+        }
+    }
+
+    override fun onDestroy() {
+        tts?.shutdown()
+        super.onDestroy()
     }
 
     override fun onRequestPermissionsResult(code: Int, permissions: Array<out String>, grants: IntArray) {
