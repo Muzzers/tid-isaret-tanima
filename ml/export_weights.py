@@ -8,19 +8,17 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from train_gru import GRUNet, ROOT, batches, load_split
+from features import ROOT, batches, load_split
+from models import load_checkpoint
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--name", default="gru226")
 ap.add_argument("--n_test", type=int, default=0, help="0 = tum test seti")
 a = ap.parse_args()
 
-ck = torch.load(ROOT / "checkpoints" / f"{a.name}.pt", map_location="cpu")
-model = GRUNet(ck["n_classes"], hidden=ck["hidden"])
-model.load_state_dict(ck["state"])
-model.eval()
+model, ck = load_checkpoint(a.name)
 w = {k: v.numpy() for k, v in ck["state"].items()}
-np.savez(ROOT / "checkpoints" / f"{a.name}_weights.npz", hidden=ck["hidden"], **{k.replace(".", "__"): v for k, v in w.items()})
+np.savez(ROOT / "checkpoints" / f"{a.name}_weights.npz", hidden=ck.get("hidden", 0), **{k.replace(".", "__"): v for k, v in w.items()})
 
 classes = ck["classes"]
 label_map = {c: i for i, c in enumerate(classes)}

@@ -10,9 +10,11 @@ import itertools
 import numpy as np
 import torch
 
-from train_gru import GRUNet, ROOT, featurize, fix_length, to_vec
 import csv
 from pathlib import Path
+
+from features import ROOT, featurize, fix_length, to_vec
+from models import load_checkpoint
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--name", default="gru226")
@@ -20,9 +22,9 @@ ap.add_argument("--split", default="val")
 ap.add_argument("--limit", type=int, default=0)
 a = ap.parse_args()
 
-ck = torch.load(ROOT / "checkpoints" / f"{a.name}.pt", map_location="cpu")
+model, ck = load_checkpoint(a.name)
 dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = GRUNet(ck["n_classes"], hidden=ck["hidden"]); model.load_state_dict(ck["state"]); model.to(dev).eval()
+model.to(dev)
 
 rows = list(csv.reader(open(ROOT / "data" / "archive (1)" / f"{a.split}_labels.csv")))
 clips, ys = [], []

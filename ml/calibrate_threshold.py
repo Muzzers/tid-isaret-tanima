@@ -8,16 +8,15 @@ import argparse
 import numpy as np
 import torch
 
-from train_gru import GRUNet, ROOT, batches, load_split
+from features import ROOT, batches, load_split
+from models import load_checkpoint
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--name", default="gru226")
 ap.add_argument("--target_precision", type=float, default=0.95)
 a = ap.parse_args()
 
-ck = torch.load(ROOT / "checkpoints" / f"{a.name}.pt", map_location="cpu")
-model = GRUNet(ck["n_classes"], hidden=ck["hidden"])
-model.load_state_dict(ck["state"]); model.eval()
+model, ck = load_checkpoint(a.name)
 label_map = {c: i for i, c in enumerate(ck["classes"])}
 
 

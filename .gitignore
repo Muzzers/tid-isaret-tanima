@@ -28,3 +28,10 @@ ml/models/*.task
 # Android'e gomulen MediaPipe modelleri (ml/README.md'deki komutla indirilip kopyalanir)
 app/android/app/src/main/assets/*.task
 app/android/app/src/main/assets/selftest.bin
+
+.DS_Store
+*.7z
+*.apk
+/flutter/
+ml/.venv-convert/
+experiments/*_demo_*.json

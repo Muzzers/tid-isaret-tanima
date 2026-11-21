@@ -1,5 +1,22 @@
 # ml/: nokta çıkarımı ve model eğitimi
 
+## Dosyalar
+
+| Dosya | İş |
+|---|---|
+| `extract_keypoints.py` | videodan MediaPipe ile el + gövde noktaları (`.npz`) |
+| `features.py` | normalizasyon, 64 kareye örnekleme, artırma, batch |
+| `models.py` | `GRUNet`, `CNNTransformerNet`, kayıtlı ağırlığı yükleme |
+| `train_gru.py` | eğitim döngüsü (`--model gru` ya da `cnn_transformer`) |
+| `compare_models.py` | model × tohum koşuları, özet tablo |
+| `error_analysis.py` | sınıf bazlı F1, karışıklık matrisi, eğitim eğrisi |
+| `demo.py` | hazır ağırlıkla örnek tahminler ve test doğruluğu |
+| `calibrate_threshold.py`, `tune_segmentation.py` | güven eşiği ve segment kuralları |
+| `export_weights.py`, `convert_tflite.py`, `export_selftest.py` | LiteRT dönüşümü (BiGRU) ve telefon öz-testi |
+| `convert_cnn_transformer.py` | 1B-CNN + Transformer'ın LiteRT dönüşümü (uygulamadaki model) |
+| `export_reference.py` | uygulamadaki işaret listesi için her kelimenin örnek hareketi |
+| `live_analysis.py` | gönüllü testi kayıtlarını inceleme, AUTSL ile karşılaştırma |
+
 ## Ortam (Python 3.12)
 
 ```bash
@@ -38,3 +55,20 @@ ml/.venv/Scripts/python.exe ml/extract_keypoints.py --split train --shard 0/3 --
 ```
 
 `val` ve `test` için aynı komutu `--split` değiştirerek çalıştırın. Ölçülen hız: 10 işçi ile ~0,77 sn/video (toplam ~36.300 video ≈ 7,7 saat tek makinede, 3 makinede ~2,6 saat).
+
+## Model karşılaştırma (İP3)
+
+İki model aynı veri, artırma ve değerlendirme ile eğitilir; tek değişken mimaridir.
+
+```bash
+# tek koşu
+ml/.venv/Scripts/python.exe ml/train_gru.py --model cnn_transformer --epochs 60 --name cnn226
+
+# iki model x 3 tohum, sonunda markdown tablo + experiments/ altina ozet JSON
+ml/.venv/Scripts/python.exe ml/compare_models.py --seeds 0,1,2 --epochs 60
+
+# hata analizi, sinif bazli F1 ve karisiklik matrisi grafigi
+ml/.venv/Scripts/python.exe ml/error_analysis.py --name gru226
+```
+
+

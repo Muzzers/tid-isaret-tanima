@@ -1,0 +1,182 @@
+{
+  "name": "cnn_transformer_all_s0",
+  "arch": "1D-CNN+Transformer",
+  "split": "test",
+  "n_samples": 3741,
+  "accuracy": 0.8883,
+  "macro_f1": 0.8861,
+  "worst_10": [
+    {
+      "idx": 52,
+      "support": 10,
+      "precision": 0.4545,
+      "recall": 0.5,
+      "f1": 0.4762,
+      "class_id": 52,
+      "name": "doktor"
+    },
+    {
+      "idx": 160,
+      "support": 17,
+      "precision": 0.7,
+      "recall": 0.4118,
+      "f1": 0.5185,
+      "class_id": 160,
+      "name": "persembe"
+    },
+    {
+      "idx": 47,
+      "support": 14,
+      "precision": 0.6667,
+      "recall": 0.4286,
+      "f1": 0.5217,
+      "class_id": 47,
+      "name": "dakika"
+    },
+    {
+      "idx": 214,
+      "support": 17,
+      "precision": 0.7778,
+      "recall": 0.4118,
+      "f1": 0.5385,
+      "class_id": 214,
+      "name": "yastik"
+    },
+    {
+      "idx": 53,
+      "support": 17,
+      "precision": 0.5625,
+      "recall": 0.5294,
+      "f1": 0.5455,
+      "class_id": 53,
+      "name": "dolu"
+    },
+    {
+      "idx": 186,
+      "support": 16,
+      "precision": 0.6667,
+      "recall": 0.5,
+      "f1": 0.5714,
+      "class_id": 186,
+      "name": "tamam"
+    },
+    {
+      "idx": 144,
+      "support": 17,
+      "precision": 0.6429,
+      "recall": 0.5294,
+      "f1": 0.5806,
+      "class_id": 144,
+      "name": "okul"
+    },
+    {
+      "idx": 48,
+      "support": 17,
+      "precision": 0.55,
+      "recall": 0.6471,
+      "f1": 0.5946,
+      "class_id": 48,
+      "name": "dede"
+    },
+    {
+      "idx": 150,
+      "support": 16,
+      "precision": 1.0,
+      "recall": 0.5,
+      "f1": 0.6667,
+      "class_id": 150,
+      "name": "oruc"
+    },
+    {
+      "idx": 122,
+      "support": 17,
+      "precision": 0.7692,
+      "recall": 0.5882,
+      "f1": 0.6667,
+      "class_id": 122,
+      "name": "kotu"
+    }
+  ],
+  "confused_pairs": [
+    {
+      "true_id": 144,
+      "true_name": "okul",
+      "pred_id": 43,
+      "pred_name": "corba",
+      "count": 8,
+      "true_total": 17
+    },
+    {
+      "true_id": 122,
+      "true_name": "kotu",
+      "pred_id": 154,
+      "pred_name": "para",
+      "count": 7,
+      "true_total": 17
+    },
+    {
+      "true_id": 166,
+      "true_name": "sabun",
+      "pred_id": 17,
+      "pred_name": "ayakkabi",
+      "count": 7,
+      "true_total": 17
+    },
+    {
+      "true_id": 6,
+      "true_name": "agir",
+      "pred_id": 79,
+      "pred_name": "hafif",
+      "count": 6,
+      "true_total": 17
+    },
+    {
+      "true_id": 150,
+      "true_name": "oruc",
+      "pred_id": 144,
+      "pred_name": "okul",
+      "count": 5,
+      "true_total": 16
+    },
+    {
+      "true_id": 111,
+      "true_name": "kim",
+      "pred_id": 62,
+      "pred_name": "erkek",
+      "count": 5,
+      "true_total": 17
+    },
+    {
+      "true_id": 51,
+      "true_name": "devlet",
+      "pred_id": 16,
+      "pred_name": "ataturk",
+      "count": 5,
+      "true_total": 16
+    },
+    {
+      "true_id": 48,
+      "true_name": "dede",
+      "pred_id": 53,
+      "pred_name": "dolu",
+      "count": 5,
+      "true_total": 17
+    },
+    {
+      "true_id": 140,
+      "true_name": "ocak",
+      "pred_id": 194,
+      "pred_name": "terazi",
+      "count": 4,
+      "true_total": 17
+    },
+    {
+      "true_id": 53,
+      "true_name": "dolu",
+      "pred_id": 48,
+      "pred_name": "dede",
+      "count": 4,
+      "true_total": 17
+    }
+  ]
+}

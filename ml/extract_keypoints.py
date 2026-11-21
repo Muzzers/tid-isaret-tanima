@@ -42,7 +42,8 @@ def make_landmarkers():
     return hand, pose
 
 
-def extract_video(path):
+def extract_video(path, step=1):
+    """step > 1: yalnizca her step. kare islenir (ASL Citizen on egitimi icin 15 FPS); AUTSL'de 1."""
     cap = cv2.VideoCapture(str(path))
     if not cap.isOpened():
         raise IOError(f"acilamadi: {path}")
@@ -54,6 +55,9 @@ def extract_video(path):
         ok, frame = cap.read()
         if not ok:
             break
+        if i % step:
+            i += 1
+            continue
         ts = int(i * 1000.0 / fps)
         img = mp.Image(image_format=mp.ImageFormat.SRGB, data=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         h = np.zeros((2, 21, 3), np.float32)

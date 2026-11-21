@@ -4,6 +4,7 @@ ikili dosyaya yazar (app/android/app/src/main/assets/selftest.bin).
 Her ornek: int T, int etiket, int python_tahmini, sonra T x [hands 2*21*2 float, pose 7*2 float,
 hand_ok 2 float, pose_ok 1 float] (little-endian, noktalar 0-1 normalize goruntu koordinati).
 """
+import argparse
 import csv
 import struct
 from pathlib import Path
@@ -11,8 +12,10 @@ from pathlib import Path
 import numpy as np
 
 ROOT = Path(__file__).resolve().parent.parent
+ap = argparse.ArgumentParser()
+ap.add_argument("--name", default="gru226", help="telefondaki modelle ayni olmali (export_weights.py ciktisi)")
 N = 200
-ref = np.load(ROOT / "data" / "export" / "gru226_test.npz")["ref"].argmax(1)
+ref = np.load(ROOT / "data" / "export" / f"{ap.parse_args().name}_test.npz")["ref"].argmax(1)
 rows = [r for r in csv.reader(open(ROOT / "data" / "archive (1)" / "test_labels.csv"))]
 out = bytearray()
 n = 0
