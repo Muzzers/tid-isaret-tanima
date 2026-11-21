@@ -18,6 +18,34 @@
       "problemMatcher": []
     },
     {
+      "label": "Tez: PDF derle (derle.sh)",
+      "type": "shell",
+      "command": "./derle.sh",
+      "options": { "cwd": "${workspaceFolder}/docs/tez" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Uygulama: APK derle (release)",
+      "type": "shell",
+      "command": "../flutter/bin/flutter build apk --release",
+      "options": { "cwd": "${workspaceFolder}/app" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Uygulama: bağlı telefona yükle",
+      "type": "shell",
+      "command": "adb install -r app/build/app/outputs/flutter-apk/app-release.apk",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Gönüllü testi: kayıtları telefondan al (runs/gonullu_testi)",
+      "type": "shell",
+      "command": "mkdir -p runs && adb pull /sdcard/Android/data/tr.edu.erciyes.tid_app/files/gonullu_testi runs/",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
       "label": "Ortam: PyTorch ve cihaz kontrolü",
       "type": "shell",
       "command": "ml/.venv/bin/python -c \"import torch; print('torch', torch.__version__, '| cuda', torch.cuda.is_available(), '| mps', torch.backends.mps.is_available())\"",

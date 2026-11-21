@@ -1,6 +1,7 @@
-// Vize surumu. Calistir ve Hata Ayikla (Cmd+Shift+D) menusunden secilir, F5 ile baslar.
+// Calistir ve Hata Ayikla (Cmd+Shift+D) menusunden secilir, F5 ile baslar.
 // 1-8 ara rapordaki sirayla gider ve hazir agirliklari kullanir (checkpoints/*.pt).
-// "Ek" ile baslayanlar uzun surer ya da vize kapsami disindadir.
+// 9-12 bitirme tezindeki ek adimlar (uygulamadaki model, ornek hareketler, gonullu testi).
+// "Ek" ile baslayanlar uzun surer.
 {
   "version": "0.2.0",
   "configurations": [
@@ -123,6 +124,47 @@
       "justMyCode": true
     },
     {
+      "name": "9. Uygulamadaki model: LiteRT dönüşümü (1B-CNN+Transformer, adım 1/2: ağırlıkları dışa aktar)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/ml/export_weights.py",
+      "args": ["--name", "cnn_transformer_all_s1"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "10. Uygulamadaki model: LiteRT dönüşümü (adım 2/2: Keras + int8, TensorFlow ortamı)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/ml/convert_cnn_transformer.py",
+      "python": "${workspaceFolder}/ml/.venv-convert/bin/python",
+      "args": ["--name", "cnn_transformer_all_s1"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "11. Uygulama için örnek hareketleri dışa aktar (işaret listesi animasyonu)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/ml/export_reference.py",
+      "args": ["--name", "gru226"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "12. Gönüllü testi kayıtlarını incele (önce görev: telefondan kayıtları al)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/ml/live_analysis.py",
+      "args": ["runs/gonullu_testi"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
       "name": "Ek: 226 sınıf tam eğitim, 60 epoch (1B-CNN+Transformer, ~18 dk)",
       "type": "debugpy",
       "request": "launch",
@@ -186,7 +228,7 @@
       "request": "launch",
       "cwd": "${workspaceFolder}/app",
       "program": "lib/main.dart",
-      "flutterMode": "profile"
+      "flutterMode": "release"
     }
   ]
 }

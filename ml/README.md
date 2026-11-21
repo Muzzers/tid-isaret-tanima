@@ -12,7 +12,10 @@
 | `error_analysis.py` | sınıf bazlı F1, karışıklık matrisi, eğitim eğrisi |
 | `demo.py` | hazır ağırlıkla örnek tahminler ve test doğruluğu |
 | `calibrate_threshold.py`, `tune_segmentation.py` | güven eşiği ve segment kuralları |
-| `export_weights.py`, `convert_tflite.py`, `export_selftest.py` | LiteRT dönüşümü ve telefon öz-testi |
+| `export_weights.py`, `convert_tflite.py`, `export_selftest.py` | LiteRT dönüşümü (BiGRU) ve telefon öz-testi |
+| `convert_cnn_transformer.py` | 1B-CNN + Transformer'ın LiteRT dönüşümü (uygulamadaki model) |
+| `export_reference.py` | uygulamadaki işaret listesi için her kelimenin örnek hareketi |
+| `live_analysis.py` | gönüllü testi kayıtlarını inceleme, AUTSL ile karşılaştırma |
 
 ## Ortam (Python 3.12)
 

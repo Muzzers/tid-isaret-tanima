@@ -41,3 +41,25 @@
 
 **Sırada**
 - BiGRU tohum 1-2 bitince 3 tohumluk tablo; rapordaki doğrulama ve parametre sayılarının JSON ile eşitlenmesi.
+
+## 21 Kasım 2026
+
+**Ne yaptım?**
+- Uygulama üç ekrana ayrıldı (Tanı, Metin, İşaretler). İşaretler ekranında her kelimenin eğitim verisinden
+  seçilmiş örnek hareketi iskelet animasyonu olarak oynuyor (`ml/export_reference.py`, 2,2 MB).
+- Gönüllü testi ekranı: rastgele kelimeler, kayıt, tahmin; her deneme nokta koordinatlarıyla JSON olarak
+  telefona yazılıyor. `ml/live_analysis.py` bu kayıtları yeniden sınıflandırıp AUTSL ile karşılaştırıyor.
+- 1B-CNN+Transformer LiteRT'ye çevrildi (`ml/convert_cnn_transformer.py`) ve uygulamadaki model oldu.
+- Gövde noktaları iki karede bir çıkarılıyor (hız için).
+- Bitirme tezi taslağı: `docs/tez/` (28 sayfa).
+- Veri seti taraması: AUTSL dışında açık indirilebilen TİD kelime veri seti yok. BosphorusSign22k (744 işaret)
+  lisans sözleşmesiyle, TurkSign446 (446 işaret, MediaPipe noktaları) erişim talebiyle alınabiliyor.
+
+**Ölçülen**
+- 3 tohum: 1B-CNN+Transformer test %89,42 ± 0,52, BiGRU %87,98 ± 0,23.
+- 1B-CNN+Transformer int8: 1,61 MB, test %89,82, PyTorch ile aynı tahmin %99,57.
+- Eşik 0,6: test kapsamı %85,4, kabul edilenlerde doğruluk %96,1.
+- Gövde iki karede bir: 10 FPS'e seyreltilmiş testte doğruluk değişmedi (%87,22).
+
+**Sırada**
+- Tablette: FPS, öz-test, ekran görüntüleri, uçak modu; gönüllü testi (ekip dışından katılımcılar).
