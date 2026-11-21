@@ -18,7 +18,7 @@ a = ap.parse_args()
 
 model, ck = load_checkpoint(a.name)
 w = {k: v.numpy() for k, v in ck["state"].items()}
-np.savez(ROOT / "checkpoints" / f"{a.name}_weights.npz", hidden=ck["hidden"], **{k.replace(".", "__"): v for k, v in w.items()})
+np.savez(ROOT / "checkpoints" / f"{a.name}_weights.npz", hidden=ck.get("hidden", 0), **{k.replace(".", "__"): v for k, v in w.items()})
 
 classes = ck["classes"]
 label_map = {c: i for i, c in enumerate(classes)}

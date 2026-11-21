@@ -23,7 +23,7 @@ class _IsaretlerEkraniState extends State<IsaretlerEkrani> {
         children: const [
           Text('Telefon kamerasından Türk İşaret Dili kelimelerini tanıyıp yazıya çeviren, internetsiz çalışan '
               'uygulama. Erciyes Üniversitesi Bilgisayar Mühendisliği bitirme projesi.\n\n'
-              'El ve gövde noktaları MediaPipe ile çıkarılır, BiGRU modeli (LiteRT, int8) AUTSL veri setindeki '
+              'El ve gövde noktaları MediaPipe ile çıkarılır, 1B-CNN + Transformer modeli (LiteRT, int8, 1,6 MB) AUTSL veri setindeki '
               '226 işareti tanır. Kamera görüntüsü cihazdan çıkmaz.'),
         ],
       );

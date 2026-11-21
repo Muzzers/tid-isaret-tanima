@@ -137,7 +137,14 @@ class CameraPlatformView(
         val frames = synchronized(recLock) { ArrayList(rec) }
         lastRec = frames
         if (frames.size < 8) {
-            result.success(mapOf("error" to "Cok az kare (${frames.size}); isareti kamerada biraz daha uzun yapin."))
+            result.success(mapOf("error" to "Çok az kare (${frames.size}); işareti kamerada biraz daha uzun yapın."))
+            return
+        }
+        // El neredeyse hic gorunmediyse modele vermiyoruz: model "eller yok" girdilerinde de bazen
+        // yuksek guvenle bir kelime seciyor (ml/calibrate_threshold.py, negatif ornekler).
+        val handFrames = frames.count { f -> f.hands.any { it != null } }
+        if (handFrames < frames.size / 5) {
+            result.success(mapOf("error" to "El görünmedi. Ellerinizin kamerada göründüğünden emin olun."))
             return
         }
         classifyExec.execute {
