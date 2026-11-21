@@ -120,11 +120,39 @@ def aynala(hands, pose, hok):
     return hands, pose, hok[:, ::-1].copy()
 
 
-def augment(hands, pose, hok, rng, ayna=False):
+def canli_bozulma(hands, pose, hok, rng):
+    """Telefonla canli kullanimdaki farklar (ml/saglamlik_testi.py ile olculdu): kayit basinda/sonunda
+    eller asagida bekleme, elin bazi karelerde bulunamamasi, nokta titremesi. Her biri ayri olasilikla."""
+    t = len(hands)
+    if rng.random() < 0.5:  # bos kareler: kayit erken basladi / gec bitti
+        n0, n1 = (int(t * rng.uniform(0, 0.4)) if rng.random() < 0.5 else 0 for _ in range(2))
+        def bekle(n, p0):
+            return (np.zeros((n, 2, 21, 2), np.float32),
+                    np.repeat(p0[None], n, 0) + rng.normal(0, 0.01, (n, 7, 2)).astype(np.float32),
+                    np.zeros((n, 2), np.float32))
+        if n0:
+            bh, bp, bk = bekle(n0, pose[0])
+            hands, pose, hok = np.concatenate([bh, hands]), np.concatenate([bp, pose]), np.concatenate([bk, hok])
+        if n1:
+            bh, bp, bk = bekle(n1, pose[-1])
+            hands, pose, hok = np.concatenate([hands, bh]), np.concatenate([pose, bp]), np.concatenate([hok, bk])
+    if rng.random() < 0.5:  # el kaybi
+        hok = hok * (rng.random(hok.shape) > rng.uniform(0, 0.3))
+    if rng.random() < 0.5:  # titreme
+        sd = rng.uniform(0, 0.04)
+        hands = hands + rng.normal(0, sd, hands.shape).astype(np.float32)
+        pose = pose + rng.normal(0, sd, pose.shape).astype(np.float32)
+    return hands * hok[:, :, None, None], pose, hok.astype(np.float32)
+
+
+def augment(hands, pose, hok, rng, ayna=False, saglam=False):
     """Egitimde: zamansal seyreltme (telefonun dusuk kare hizini taklit eder), kirpma,
-    rastgele olcek, +-10 derece donme, kaydirma; ayna=True ise yarim olasilikla ayna goruntusu."""
+    rastgele olcek, +-10 derece donme, kaydirma; ayna=True ise yarim olasilikla ayna goruntusu.
+    saglam=True ise canli kullanim bozulmalari ve kamera acisi icin dikey olcek de eklenir."""
     if ayna and rng.random() < 0.5:
         hands, pose, hok = aynala(hands, pose, hok)
+    if saglam:
+        hands, pose, hok = canli_bozulma(hands, pose, hok, rng)
     t = len(hands)
     stride = int(rng.choice([1, 1, 2, 3]))  # 30 FPS / 15 FPS / 10 FPS
     idx = np.arange(int(rng.integers(0, stride)), t, stride)
@@ -138,20 +166,21 @@ def augment(hands, pose, hok, rng, ayna=False):
     R = np.array([[np.cos(a), -np.sin(a)], [np.sin(a), np.cos(a)]], np.float32)
     s = rng.uniform(0.9, 1.1)
     shift = rng.normal(0, 0.05, 2).astype(np.float32)
-    hands = (hands @ R.T) * s + shift
-    pose = (pose @ R.T) * s + shift
+    S = np.array([s, s * (rng.uniform(0.7, 1.3) if saglam else 1.0)], np.float32)  # kamera asagidan/yukaridan
+    hands = (hands @ R.T) * S + shift
+    pose = (pose @ R.T) * S + shift
     hands = hands * hok[:, :, None, None]
     return hands, pose, hok
 
 
-def batches(X, y, bs, rng, train, ayna=False):
+def batches(X, y, bs, rng, train, ayna=False, saglam=False):
     order = rng.permutation(len(X)) if train else np.arange(len(X))
     for i in range(0, len(X), bs):
         ids = order[i : i + bs]
         vecs = []
         for j in ids:
             h, p, k = X[j]
-            h, p, k = augment(h, p, k, rng, ayna) if train else fix_length(h, p, k)
+            h, p, k = augment(h, p, k, rng, ayna, saglam) if train else fix_length(h, p, k)
             vecs.append(to_vec(h, p, k))
         yield torch.tensor(np.stack(vecs)), torch.tensor(y[ids])
 

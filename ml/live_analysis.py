@@ -24,7 +24,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from features import ROOT, fix_length, load_sign_names, normalize, to_vec
+from features import ROOT, el_gorunen_kisim, fix_length, load_sign_names, normalize, to_vec
 from models import load_checkpoint
 
 
@@ -86,6 +86,7 @@ def main():
     kayitlar = []
     for f in dosyalar:
         r, d = kayit_oku(f)
+        d = el_gorunen_kisim(d, pay=1, en_az=8) or d  # uygulamadaki gibi: elin ilk-son goruldugu kareye kirp
         kayitlar.append((f, r, d))
         out = Path(a.npz) / r.get("katilimci", "anonim")
         out.mkdir(parents=True, exist_ok=True)

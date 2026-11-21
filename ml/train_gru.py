@@ -46,6 +46,8 @@ def main():
     ap.add_argument("--dataset", choices=["autsl", "asl_citizen"], default="autsl",
                     help="asl_citizen yalnizca on egitim icin (Amerikan Isaret Dili)")
     ap.add_argument("--ayna", action="store_true", help="egitimde yarim olasilikla ayna goruntusu (solak isaretci)")
+    ap.add_argument("--saglam", action="store_true",
+                    help="canli kullanim bozulmalari: bos kareler, el kaybi, titreme, kamera acisi (saglamlik_testi.py)")
     ap.add_argument("--init", default="", help="on egitilmis agirlik (checkpoints/<ad>.pt); cikis katmani haric alinir")
     a = ap.parse_args()
 
@@ -86,7 +88,7 @@ def main():
     for ep in range(1, a.epochs + 1):
         model.train()
         tot = 0.0
-        for xb, yb in batches(*data["train"], a.batch, rng, True, a.ayna):
+        for xb, yb in batches(*data["train"], a.batch, rng, True, a.ayna, a.saglam):
             opt.zero_grad()
             loss = nn.functional.cross_entropy(model(xb.to(dev)), yb.to(dev), label_smoothing=0.1)
             loss.backward()
@@ -112,7 +114,7 @@ def main():
     (out / f"{time.strftime('%Y%m%d')}_{a.name}.json").write_text(
         json.dumps(dict(model=arch, model_type=a.model, params=n_params, n_classes=len(classes),
                         classes=classes if len(classes) < 30 else "all", epochs=a.epochs, seed=a.seed, lr=a.lr,
-                        dataset=a.dataset, init=a.init or None, ayna=a.ayna,
+                        dataset=a.dataset, init=a.init or None, ayna=a.ayna, saglam=a.saglam,
                         n_train=len(data["train"][1]), best_val=best, test=test, device=str(dev),
                         duration_s=round(time.time() - t0), history=history), indent=2),
         encoding="utf-8")
