@@ -1,0 +1,61 @@
+\section{Veri Seti ve Ön İşleme}
+\label{CH:Veri}
+
+\subsection{AUTSL veri seti}
+
+Çalışmada AUTSL veri seti kullanılmıştır~\cite{AUTSL2020}. Veri setinde 226 işaret,
+43 işaretçi ve toplam 36.302 video bulunmaktadır. Videolar 512$\times$512 çözünürlükte
+ve saniyede 30 karedir. Resmî bölmeler \texttt{train} (28.142 video, 31 işaretçi),
+\texttt{val} (4.418 video, 6 işaretçi) ve \texttt{test} (3.742 video, 6 işaretçi)
+şeklindedir. Bölmeler arasında ortak işaretçi bulunmadığı ve sınıf numaralarının üç
+bölmede de aynı anlama geldiği ayrıca kontrol edilmiştir. Böylece ölçülen doğruluk,
+modelin daha önce görmediği kişiler üzerindeki başarısını göstermektedir.
+
+Kaggle üzerinden indirilen kopyada 11 videonun açılamadığı görülmüştür. Bu dosyalarda
+MP4 kutusuna ait \texttt{moov} bilgisi eksiktir, yani dosyalar yarım inmiştir. İlgili
+videolar atlanmış, kalan 28.132 eğitim, 4.418 doğrulama ve 3.741 test videosu ile
+çalışılmıştır. Sınıf numarası ile Türkçe kelime eşlemesi
+\texttt{SignList\_ClassId\_TR\_EN.csv} dosyasından okunmakta, uygulamada kelimeler
+Türkçe yazımıyla (örneğin \sol cikmak\sag{} yerine \sol çıkmak\sag) gösterilmektedir.
+
+\subsection{Nokta çıkarımı}
+
+Her video karesi MediaPipe Tasks API'ye video modunda verilmiş, iki el için 21'er nokta
+ve üst gövde için 7 nokta (burun, iki omuz, iki dirsek, iki bilek) alınmıştır. Tüm veri
+setinin çıkarımı tek bir bilgisayarda yapılmış, sonuçlar her video için bir
+\texttt{.npz} dosyası olarak saklanmıştır (toplam 1,1 GB). Ellerin bulunma oranı sol
+elde yüzde 82, sağ elde yüzde 86 olarak ölçülmüş, gövde noktaları tüm karelerde
+yakalanmıştır. Elin bulunmadığı karelerde ilgili koordinatlar sıfırlanmakta ve iki
+boyutlu bir \sol el var mı\sag{} göstergesi özellik vektörüne eklenmektedir.
+
+MediaPipe'ın sol/sağ el etiketi, gövde modelinin sol ve sağ bilek noktalarıyla
+karşılaştırılmış ve 28.689 el-karede yüzde 98 oranında uyumlu bulunmuştur. AUTSL
+videoları aynalanmamıştır; telefondaki analiz görüntüsü de aynalanmadan işlenmektedir.
+
+\subsection{Normalizasyon ve sabit uzunluk}
+
+Kişinin kameraya uzaklığı ve boyu modeli etkilemesin diye her karedeki noktalar iki
+omzun orta noktasına göre ötelenmiş ve omuz genişliğine bölünmüştür:
+\begin{equation}
+  \hat{p}_i = \frac{p_i - \tfrac{1}{2}(s_{\text{sol}} + s_{\text{sağ}})}{\lVert s_{\text{sol}} - s_{\text{sağ}} \rVert}
+\end{equation}
+Burada $p_i$ bir noktanın görüntü koordinatı, $s$ ise omuz noktalarıdır. Omuzların
+bulunamadığı karelerde bir önceki geçerli değer kullanılmaktadır. Telefon görüntüsü
+kare olmadığı için Kotlin tarafında koordinatlar önce piksel birimine çevrilmekte,
+böylece eğitimdeki kare görüntüyle ölçek farkı ortadan kalkmaktadır.
+
+Normalizasyondan sonra her kare
+$2\times21\times2 + 7\times2 + 2 = 100$ boyutlu bir vektörle temsil edilmektedir
+(koordinatlar $x$ ve $y$; derinlik kullanılmamıştır). Videoların uzunluğu değişken
+olduğu için (eğitim kümesinde ortalama yaklaşık 60 kare) her dizi doğrusal
+interpolasyonla 64 kareye örneklenmektedir. Modelin girdisi bu nedenle
+$64\times100$ boyutludur.
+
+\subsection{Veri artırma}
+
+Eğitimde dört tür artırma uygulanmaktadır. En önemlisi zamansal seyreltmedir: kareler
+rastgele 1, 2 veya 3 adımda bir alınarak 30, 15 ve 10 FPS'lik kayıtlara benzetilir.
+Bunun nedeni telefon kamerasının gerçek kullanımda saniyede yaklaşık 9--12 kare
+işleyebilmesidir. Diğer artırmalar dizinin iki ucundan yüzde 10'a kadar kırpma,
+$\pm10^\circ$ döndürme, yüzde 90--110 arası ölçek değişimi ve küçük bir kaydırmadır.
+Artırma yalnızca eğitim kümesine uygulanmaktadır.

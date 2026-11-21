@@ -1,0 +1,60 @@
+\documentclass{erciyes}
+
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{float}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{cite}
+\usepackage{url}
+\usepackage{tikz}
+\usetikzlibrary{positioning,fit,arrows.meta}
+
+% Henuz olculmemis degerler PDF'te kirmizi gorunsun; olculunce yerine sayi yazilir.
+\newcommand{\olculecek}[1]{\textcolor{red}{\textbf{[ÖLÇÜLECEK: #1]}}}
+
+\renewcommand{\thetable}{\arabic{table}}   % bölüm numarası kullanılmadığı için
+\renewcommand{\thefigure}{\arabic{figure}}
+
+% Türkçe kelimeler uzun olduğu için satırlar taşabiliyor;
+% bu ayar kelimeler arasındaki boşluğu biraz esnetip taşmayı azaltıyor.
+\setlength{\emergencystretch}{3em}
+
+\ToCLineisDotted %% İçindekiler kısmında sayfa numaralarına kadar olan kısım noktalı olsun
+\ToCChapterBold  %% İçindekiler kısmında BÖLÜM 1-2... yazıları bold olsun.
+%\TabloListesiYok %% Tablo Listesi kullanılmayacak
+%\SekilListesiYok %% Şekil Listesi kullanılmayacak
+
+\setlength{\fboxsep}{0pt}
+
+\input{defination.tex}
+
+\renewcommand{\textfraction}{0.10}
+\renewcommand{\topfraction}{0.95}
+\renewcommand{\bottomfraction}{0.95}
+\renewcommand{\floatpagefraction}{0.35}
+
+\setcounter{totalnumber}{5}
+
+\begin{document}
+\input{bolum1-ozet.tex}
+\input{bolum2-giris.tex}
+\input{bolum3-literatur.tex}
+\input{bolum4-veri.tex}
+\input{bolum5-model.tex}
+\input{bolum6-uygulama.tex}
+\input{bolum7-degerlendirme.tex}
+\input{bolum8-sonuc.tex}
+
+\bibliographystyle{erciyesbm}
+\bibliography{referanslar}
+
+\clearpage
+\appendix
+\input{ek-gonullu-testi.tex}
+
+\end{document}

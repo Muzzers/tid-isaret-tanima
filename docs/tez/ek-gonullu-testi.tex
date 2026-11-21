@@ -1,0 +1,62 @@
+\section{Gönüllü Testi Protokolü ve Bilgilendirilmiş Onam Formu}
+\label{EK:Gonullu}
+
+\subsection*{Amaç}
+
+Uygulamanın gerçek kullanım koşullarında (telefon kamerası, farklı kişiler, farklı
+ortamlar) işaretleri ne kadar doğru tanıdığını ölçmek. Hedef, tez önerisindeki
+\sol gerçek ortam doğruluğu yüzde 75\sag{} ölçütüdür.
+
+\subsection*{Katılımcılar}
+
+Ekip dışından, 18 yaşını doldurmuş gönüllüler. İşaret dili bilmek şart değildir;
+her işaretin örnek hareketi uygulamada gösterilir. Katılımcı adı hiçbir yere yazılmaz,
+yalnızca bir kod (K01, K02, \ldots) kullanılır.
+
+\subsection*{Düzenek}
+
+\begin{itemize}
+  \item Telefon ya da tablet sabit bir yere, göğüs hizasında ve yaklaşık 1--1,5 metre
+        uzağa konur. Baş, omuzlar ve iki el görüntüde olmalıdır.
+  \item Ön kamera kullanılır. Ortam ışığı not edilir (gün ışığı / yapay ışık).
+  \item Uygulama uçak modunda çalıştırılır.
+\end{itemize}
+
+\subsection*{Uygulama}
+
+\begin{enumerate}
+  \item İşaretler sekmesinde sağ üstteki \sol Gönüllü testi\sag{} açılır, katılımcı
+        kodu girilir ve 30 işaret seçilir.
+  \item Her kelime için katılımcı örnek hareketi en az iki kez izler, \sol Kaydet\sag{}
+        düğmesine basar, işareti yapar ve \sol Bitir\sag{} düğmesine basar.
+  \item Kayıt hatalıysa (el görünmedi, çok kısa) bir kez yeniden kaydedilir; tahmin
+        çıktıysa \sol Sonraki\sag{} ile devam edilir. Yanlış tahminde yeniden deneme
+        yapılmaz.
+  \item Test sonunda özet ekranı kaydedilir (ekran görüntüsü).
+  \item Kayıtlar bilgisayara alınır ve \texttt{python ml/live\_analysis.py} ile incelenir:\\
+        {\small\texttt{adb pull /sdcard/Android/data/tr.edu.erciyes.tid\_app/\\files/gonullu\_testi}}
+\end{enumerate}
+
+\subsection*{Saklanan veri}
+
+Her deneme için yalnızca el ve gövde noktalarının koordinatları, hedef kelime,
+modelin ilk üç tahmini, güven değerleri ve katılımcı kodu saklanır. Kamera görüntüsü
+ve ses kaydedilmez. Veriler yalnızca bu bitirme projesi kapsamında kullanılır ve proje
+bitiminde silinir.
+
+\subsection*{Bilgilendirilmiş onam formu}
+
+\noindent Erciyes Üniversitesi Bilgisayar Mühendisliği Bölümü bitirme projesi
+\sol MediaPipe ve Makine Öğrenmesi Kullanarak Türk İşaret Dili Tabanlı Gerçek Zamanlı El
+Hareketi Tanıma ve Çeviri Sistemi\sag{} kapsamında yapılan teste gönüllü olarak
+katılıyorum. Testte telefon kamerası önünde işaret dili hareketleri yapacağımı;
+görüntümün kaydedilmeyeceğini, yalnızca el ve gövde noktalarının koordinatlarının
+adım yazılmadan saklanacağını; verilerin yalnızca bu proje için kullanılıp proje
+sonunda silineceğini ve testi istediğim an bırakabileceğimi biliyorum.
+
+\vspace{1cm}
+\noindent
+\begin{tabular}{@{}p{0.45\textwidth}p{0.45\textwidth}@{}}
+Katılımcı kodu: \dotfill & Tarih: \dotfill \\[8mm]
+İmza: \dotfill & Testi yürüten: \dotfill \\
+\end{tabular}

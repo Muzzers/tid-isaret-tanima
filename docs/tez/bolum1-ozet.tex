@@ -1,0 +1,41 @@
+\clearpage
+\section{Özet}
+\label{CH:Ozet}
+
+Bu projede, işitme engelli bireylerle işaret dili bilmeyen kişiler arasındaki iletişimi
+kolaylaştırmak amacıyla, akıllı telefon kamerasından alınan Türk İşaret Dili (TİD)
+kelimelerini tanıyıp yazıya çeviren bir Android uygulaması geliştirilmiştir. Sistem video
+karesini değil, telefonda çıkarılan iskelet koordinatlarını kullanmaktadır. Bu sayede
+internet bağlantısına ihtiyaç duyulmamakta ve kamera görüntüsü cihazdan dışarı
+çıkmamaktadır.
+
+Eğitim ve değerlendirmede AUTSL veri setinin işaretçiden bağımsız resmî bölmeleri
+kullanılmıştır (226 işaret, 43 işaretçi). Her karede iki elin 21'er noktası ve üst gövdeye
+ait 7 nokta Google MediaPipe Tasks ile çıkarılmış, koordinatlar omuz ortasına ötelenip
+omuz genişliğine bölünmüş ve diziler 64 kareye örneklenmiştir. Aynı veri ve eğitim
+düzeniyle iki model karşılaştırılmıştır: iki katmanlı, iki yönlü GRU (BiGRU, 2,11 milyon
+parametre) ve 1B evrişim ile iki katmanlı Transformer kodlayıcısından oluşan model
+(1B-CNN + Transformer, 1,47 milyon parametre). Üç farklı tohumla yapılan 60 epoch'luk
+eğitimler sonunda 3.741 videoluk test kümesinde BiGRU yüzde $87{,}98 \pm 0{,}23$,
+1B-CNN + Transformer yüzde $89{,}42 \pm 0{,}52$ Top-1 doğruluğa ulaşmış ve tez
+önerisindeki yüzde 85 hedefini aşmıştır.
+
+Seçilen 1B-CNN + Transformer modeli Keras üzerinden LiteRT biçimine aktarılmış ve
+dinamik aralık int8 nicemleme uygulanmıştır. Model dosyası 1,61 MB'tır; test
+doğruluğu nicemleme sonrası yüzde 89,82'dir ve PyTorch modeliyle tahminlerin yüzde
+99,57'si aynıdır. Mobil uygulama Flutter ve Kotlin ile geliştirilmiştir: kamera,
+MediaPipe ve model çıkarımı Kotlin tarafında çalışmakta, arayüz canlı tanıma, metin ve
+işaret listesi olmak üzere üç ekrandan oluşmaktadır. İşaret listesinde her kelimenin
+eğitim verisinden alınmış örnek hareketi iskelet animasyonu olarak gösterilmektedir.
+
+Kaydedilmiş veri üzerinde hedefler sağlanırken iki konu açık kalmıştır. Uçtan uca hız,
+iki MediaPipe modelinin kare başına çalışması nedeniyle 15 FPS hedefinin altındadır;
+canlı kamera kullanımında ise tahmin güvenleri kayıtlı veriye göre düşmektedir. Bu iki
+konuyu ölçmek ve ayrıştırmak için uygulamaya bir gönüllü testi ekranı ve kayıtları
+bilgisayarda inceleyen bir analiz aracı eklenmiştir.
+
+\vspace{3mm}
+\noindent\textbf{Anahtar kelimeler:} Türk İşaret Dili, işaret dili tanıma, MediaPipe,
+iskelet tabanlı tanıma, Transformer, çevrimdışı mobil uygulama, LiteRT.
+
+\clearpage

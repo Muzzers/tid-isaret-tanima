@@ -57,3 +57,9 @@ docs/vize/rapor-latex/grafik/*-eps-converted-to.pdf
 # VS Code hizli deneme kosulari (launch.json)
 experiments/*_demo_*.json
 ml/.venv-convert/
+docs/tez/*.aux
+docs/tez/*.bbl
+docs/tez/*.blg
+docs/tez/*.log
+docs/tez/*.toc
+docs/tez/*.out

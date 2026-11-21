@@ -1,0 +1,38 @@
+\section{Sonuç ve Gelecek Çalışmalar}
+\label{CH:Sonuc}
+
+Bu projede telefon kamerasıyla Türk İşaret Dili kelimelerini tanıyan, internetsiz
+çalışan bir Android uygulaması geliştirilmiştir. AUTSL veri setinin işaretçiden
+bağımsız bölmelerinde iki model karşılaştırılmış; 1B-CNN + Transformer modeli üç
+tohumda yüzde $89{,}42 \pm 0{,}52$ test doğruluğuyla BiGRU'yu (yüzde
+$87{,}98 \pm 0{,}23$) geride bırakmış ve daha az parametreyle yüzde 85 hedefini
+aşmıştır. Model int8 LiteRT biçiminde 1,61 MB'tır ve dönüşüm doğruluğu
+düşürmemiştir. Eğitim ve uygulama tarafında aynı MediaPipe modelleri ve birebir aynı
+ön işleme kullanıldığı için telefon ve Python tahminleri neredeyse tamamen
+örtüşmektedir.
+
+Uygulama tez önerisindeki üç ekranı içermektedir. Bunlara ek olarak her kelimenin
+örnek hareketini gösteren iskelet animasyonu ve gerçek ortam doğruluğunu ölçmek için
+gönüllü testi ekranı eklenmiştir. Model boyutu ve AUTSL doğruluğu hedefleri
+sağlanmış, internet bağlantısı gerektirmeyen bir yapı kurulmuştur. Uçtan uca hız ise
+iki MediaPipe modelinin kare başına çalışması nedeniyle 15 FPS hedefinin altında
+kalmıştır.
+
+\subsection*{Gelecek çalışmalar}
+
+\begin{itemize}
+  \item \textbf{Canlı veriyle ince ayar:} Gönüllü testinde toplanan nokta kayıtları
+        eğitim kümesine eklenerek model telefon kamerası koşullarına uyarlanabilir.
+  \item \textbf{Sözlüğün genişletilmesi:} BosphorusSign22k (744 işaret) ve
+        TurkSign446 (446 işaret) veri setlerine erişim izni alınarak sözlük
+        büyütülebilir. TurkSign446 noktaları MediaPipe ile çıkarıldığı için mevcut
+        hatta görece kolay eklenebilir.
+  \item \textbf{Hız:} Analiz görüntüsünün küçültülmesi, el izlemenin önceki kareden
+        başlatılması ve gövde modelinin daha seyrek çalıştırılması ile 15 FPS hedefine
+        yaklaşılabilir.
+  \item \textbf{Ayırt edici bilgi:} En çok karışan işaretler parmak teması ve derinlik
+        bilgisiyle ayrışmaktadır. Elin derinlik koordinatı ve yüz noktalarının girdiye
+        eklenmesi bu hataları azaltabilir.
+  \item \textbf{Cümle düzeyi:} Ardışık kelimelerin dilbilgisel Türkçe cümleye
+        çevrilmesi, sürekli işaret dili veri setleriyle ele alınabilir.
+\end{itemize}

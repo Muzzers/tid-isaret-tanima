@@ -1,0 +1,90 @@
+\section{Literatür ve Veri Setleri}
+\label{CH:Literatur}
+
+\subsection{İşaret dili tanıma yaklaşımları}
+
+İzole işaret dili tanımada iki ana yaklaşım bulunmaktadır. Görüntü tabanlı
+yöntemler video karelerini doğrudan evrişimli ya da üç boyutlu evrişimli ağlarla
+işler. Bu yöntemler yüksek doğruluk verse de büyük modeller ve güçlü donanım
+gerektirir; çoğunlukla sunucu tarafında çalıştırılır. İskelet tabanlı yöntemler ise
+önce her karede el, yüz ve gövde noktalarını çıkarır, sınıflandırmayı bu koordinat
+dizileri üzerinde yapar. Girdi boyutu çok küçük olduğu için modeller hafif kalır ve
+kişinin görünüşü, arka plan ya da ışık gibi etkenlerden daha az etkilenir.
+
+AUTSL veri setinin yayımlandığı çalışmada RGB ve derinlik verisi üzerinde CNN ile
+LSTM birleşimi temel yöntem olarak sunulmuştur~\cite{AUTSL2020}. Aynı veri setiyle
+düzenlenen ChaLearn LAP 2021 yarışmasında işaretçiden bağımsız değerlendirme
+yapılmış, en iyi sonuçlar birden fazla modaliteyi (RGB, derinlik, iskelet) birleştiren
+yöntemlerle alınmıştır~\cite{ChaLearn2021}. Bu yöntemlerden SAM-SLR, iskelet
+noktalarını çizge evrişimli ağlarla işleyerek diğer modalitelerle
+birleştirmiştir~\cite{SAMSLR2021}. Yarışmanın ilk sıraları yüzde 98 civarında test
+doğruluğuna ulaşmış, ancak bu sonuçlar büyük model toplulukları ve tam video girdisiyle
+elde edilmiştir; telefonda gerçek zamanlı çalışma hedeflenmemiştir.
+
+Mobil cihaz hedefli çalışmalarda Google'ın Kaggle üzerinde düzenlediği Amerikan
+İşaret Dili yarışması öne çıkmaktadır~\cite{KaggleASL2023}. Bu yarışmada girdiler
+MediaPipe ile çıkarılmış nokta dizileridir ve modellerin TensorFlow Lite biçiminde,
+sınırlı boyut ve sürede çalışması şart koşulmuştur. Öne çıkan çözümlerde nokta
+dizileri üzerinde 1B evrişim ve küçük Transformer katmanları kullanılmıştır. Bu
+projede karşılaştırılan ikinci mimari bu yaklaşımdan esinlenmiştir.
+
+TİD üzerine iskelet tabanlı çalışmalar da son yıllarda artmaktadır. TSLFormer,
+AUTSL üzerinde MediaPipe noktalarını kullanan hafif bir Transformer
+önermiştir~\cite{TSLFormer2025}. Torun ve Karacı, MediaPipe Holistic noktalarıyla 41
+TİD ifadesi üzerinde GRU, LSTM ve bunların birleşimlerini
+karşılaştırmıştır~\cite{Torun2024}.
+
+\subsection{Nokta çıkarımı: MediaPipe}
+
+MediaPipe, Google'ın cihaz üzerinde çalışan algılama hatları için geliştirdiği bir
+çerçevedir~\cite{MediaPipe2019}. El modeli önce avuç içini bulur, ardından her el için
+21 nokta üretir~\cite{MediaPipeHands2020}. Gövde modeli (BlazePose) 33 nokta
+üretir~\cite{BlazePose2020}. Bu projede yeni \textit{Tasks} arayüzündeki
+\texttt{hand\_landmarker} ve \texttt{pose\_landmarker\_lite} modelleri kullanılmıştır.
+Aynı modellerin hem Python'da (eğitim verisinin çıkarımı) hem Android'de (canlı
+kullanım) bulunması, eğitim ile uygulama arasındaki nokta sırası ve ölçek farklarını
+ortadan kaldırmak için belirleyici olmuştur.
+
+\subsection{Türk İşaret Dili veri setleri}
+
+Proje başında ve sonunda yapılan taramalarda bulunan kelime düzeyindeki TİD veri
+setleri Tablo~\ref{tab:verisetleri} içinde özetlenmiştir.
+
+\begin{table}[H]
+\centering
+\caption{Kelime düzeyindeki Türk İşaret Dili veri setleri}
+\label{tab:verisetleri}
+\small
+\begin{tabularx}{\textwidth}{@{}l r r r X@{}}
+\toprule
+\textbf{Veri seti} & \textbf{İşaret} & \textbf{İşaretçi} & \textbf{Video} & \textbf{Erişim} \\
+\midrule
+AUTSL~\cite{AUTSL2020} & 226 & 43 & 36.302 & Akademik kullanım; bu projede kullanıldı \\
+BosphorusSign22k~\cite{Bosphorus2020} & 744 & 6 & 22.542 & Yazarlara lisans sözleşmesi gönderilerek \\
+TurkSign446~\cite{TurkSign446} & 446 & 10 & 44.600 & Dosyalar kısıtlı, erişim talebiyle; yalnızca MediaPipe noktaları \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+AUTSL, işaretçi sayısının fazlalığı ve resmî bölmelerinin işaretçiden bağımsız olması
+nedeniyle ana veri seti olarak seçilmiştir. Altı işaretçili BosphorusSign22k ve on
+katılımcılı TurkSign446 daha geniş sözlük sunmakla birlikte kişi çeşitliliği daha
+düşüktür; ikisi de erişim izni gerektirdiği için bu dönemde kullanılamamıştır. Bu veri
+setleriyle sözlüğün genişletilmesi gelecek çalışma olarak bırakılmıştır.
+
+\subsection{Projenin farkı}
+
+Literatürdeki yüksek doğruluklu çalışmaların önemli bir kısmı sunucuda çalışan büyük
+modellere dayanmaktadır. Bu projenin katkısı modelin kendisinden çok, hattın uçtan uca
+ve telefonda çalışmasındadır:
+
+\begin{itemize}
+  \item Girdi olarak video karesi değil iskelet koordinatları kullanılmış, model 1,6 MB
+        ile sınırlı tutulmuştur. Ham görüntü işlenmediği için kişisel veri yükü azalmıştır.
+  \item Nokta çıkarımı eğitimde ve telefonda aynı MediaPipe Tasks modelleriyle
+        yapılmış, ön işleme Python ve Kotlin'de birebir aynı yazılmıştır. Aynı 200 örnekte
+        iki taraf yüzde 99,5 oranında aynı tahmini vermektedir.
+  \item Sistem tamamen çevrimdışıdır; uygulamanın internet izni bulunmamaktadır.
+  \item Kullanıcının işareti doğru yapabilmesi için her kelimenin örnek hareketi
+        uygulama içinde iskelet animasyonu olarak gösterilmektedir.
+\end{itemize}

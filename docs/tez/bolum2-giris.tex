@@ -1,0 +1,72 @@
+\section{Giriş}
+\label{CH:Giris}
+
+\subsection{Problem ve motivasyon}
+
+Türk İşaret Dili, işitme engelli bireylerin hem kendi aralarında hem de çevreleriyle
+iletişim kurarken kullandığı doğal dildir~\cite{TIF2023}. İşaret dilini bilmeyen
+kişilerle kurulan iletişim ise çoğu zaman yazı yazmaya ya da bir yakının
+tercümanlığına bağlı kalmaktadır. Hastane, banka, okul ve resmî daire gibi ortamlarda
+bu durum hem zaman kaybına hem de mahremiyet sorununa yol açmaktadır.
+
+Projenin çıkış noktası, bu iletişim boşluğunda en yaygın cihazı, yani akıllı telefonu
+kullanmaktır. Eldiven ya da derinlik kamerası gibi ek donanım gerektirmeyen bir çözüm
+hem maliyeti düşürür hem de günlük kullanımda kabul edilebilirliği artırır. Sistemin
+internet bağlantısına ihtiyaç duymaması, şebekenin zayıf olduğu yerlerde de
+kullanılabilmesini ve kamera görüntüsünün cihazdan çıkmamasını sağlar.
+
+\subsection{Amaç ve kapsam}
+
+Projenin amacı, telefon kamerasının önünde yapılan bir TİD kelimesini tanıyıp yazıya
+çeviren ve tamamen cihaz üzerinde çalışan bir Android uygulaması geliştirmektir.
+Kapsam şu şekilde sınırlandırılmıştır:
+
+\begin{itemize}
+  \item Tanıma kelime düzeyindedir (izole işaret). Sözlük, AUTSL veri setindeki 226
+        işaretle sınırlıdır.
+  \item Art arda yapılan işaretler sürekli modda tek tek tanınıp yan yana yazılır;
+        bunların dilbilgisel Türkçe cümleye çevrilmesi kapsam dışıdır.
+  \item Parmak alfabesi (harf harf heceleme) veri setinde bulunmadığı için desteklenmez.
+\end{itemize}
+
+\subsection{Başarı ölçütleri}
+
+Tez önerisinde belirlenen ölçütler Tablo~\ref{tab:olcutler} içinde verilmiştir. Bu
+ölçütlerin hangilerinin sağlandığı Bölüm~\ref{CH:Degerlendirme} içinde
+tartışılmaktadır.
+
+\begin{table}[H]
+\centering
+\caption{Tez önerisindeki değerlendirme ölçütleri ve hedefler}
+\label{tab:olcutler}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Ölçüt} & \textbf{Ölçüm ortamı} & \textbf{Hedef} \\
+\midrule
+Top-1 doğruluk & AUTSL test kümesi & $\geq$ yüzde 85 \\
+Gerçek ortam doğruluğu & Gönüllü testi (30 işaret) & $\geq$ yüzde 75 \\
+Model boyutu & \texttt{.tflite} dosyası & $\leq$ 10 MB \\
+İşleme hızı & Orta segment Android telefon & $\geq$ 15 kare/s \\
+İnternet bağımlılığı & Uçak modu & Tam çalışma \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Ekip ve iş bölümü}
+
+Proje üç kişilik bir ekip tarafından yürütülmüştür. Her alanın bir sorumlusu
+belirlenmiş, ancak veri, model ve uygulama aynı hattın parçaları olduğu için kararlar
+birlikte alınmıştır: veri hazırlığı, veri hattı ve normalizasyon (Mustafa Küpeli);
+yapay zekâ modeli, eğitim ve optimizasyon (Mustafa Göktepe); mobil uygulama, kullanıcı
+arayüzü ve donanım entegrasyonu (Ahmet Çelik). Çalışma ortak bir Git deposunda
+yürütülmüş, her deney \texttt{experiments/} klasöründe tarih, tohum ve sonuçlarıyla
+kaydedilmiştir.
+
+\subsection{Tezin düzeni}
+
+Bölüm~\ref{CH:Literatur} işaret dili tanıma alanındaki çalışmaları ve Türk İşaret Dili
+veri setlerini özetlemektedir. Bölüm~\ref{CH:Veri} veri setini ve ön işlemeyi,
+Bölüm~\ref{CH:Model} model mimarilerini, eğitimi ve hata analizini anlatmaktadır.
+Bölüm~\ref{CH:Uygulama} modelin telefona aktarılmasını ve mobil uygulamayı,
+Bölüm~\ref{CH:Degerlendirme} başarı ölçütlerine göre değerlendirmeyi içermektedir.
+Bölüm~\ref{CH:Sonuc} sonuçları ve gelecek çalışmaları özetlemektedir.

@@ -1,0 +1,100 @@
+\section{Değerlendirme}
+\label{CH:Degerlendirme}
+
+\subsection{Başarı ölçütlerine göre durum}
+
+Tez önerisindeki ölçütlerin ölçülen değerleri Tablo~\ref{tab:durum} içinde
+özetlenmiştir.
+
+\begin{table}[H]
+\centering
+\caption{Başarı ölçütleri ve ölçülen değerler}
+\label{tab:durum}
+\small
+\begin{tabularx}{\textwidth}{@{}l l X l@{}}
+\toprule
+\textbf{Ölçüt} & \textbf{Hedef} & \textbf{Ölçülen} & \textbf{Durum} \\
+\midrule
+Top-1 doğruluk (AUTSL test) & $\geq$ \%85 & \%89,42 $\pm$ 0,52 (3 tohum); uygulamadaki int8 model \%89,82 & Sağlandı \\
+Gerçek ortam doğruluğu & $\geq$ \%75 & \olculecek{gönüllü testi, Top-1} & -- \\
+Model boyutu & $\leq$ 10 MB & 1,61 MB (int8 \texttt{.tflite}) & Sağlandı \\
+İşleme hızı & $\geq$ 15 FPS & Yaklaşık 9 FPS (Redmi Note 10 Pro, önceki sürüm); yeni sürüm \olculecek{FPS} & Sağlanmadı \\
+İnternet bağımlılığı & Tam çalışma & İnternet izni yok; uçak modunda \olculecek{deneme} & -- \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Hız}
+
+Kare başına süre Redmi Note 10 Pro telefonda ön kamerayla, sınıflandırma modeli
+olmadan ölçülmüştür (Tablo~\ref{tab:hiz}). Sınıflandırma modelinin kendisi bir işaret
+bölütü için bir kez çalıştığından kare hızını belirleyen etken iki MediaPipe modelidir.
+
+\begin{table}[H]
+\centering
+\caption{Yapılandırmaya göre kare hızı (Redmi Note 10 Pro, ön kamera)}
+\label{tab:hiz}
+\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+\textbf{Yapılandırma} & \textbf{FPS} & \textbf{Kare başına (ms)} & \textbf{El (ms)} & \textbf{Gövde (ms)} \\
+\midrule
+Hata ayıklama sürümü, CPU, sıralı & $\sim$5 & 200--300 & 150--180 & 70--80 \\
+Hepsi GPU, paralel & 7 & 120--130 & 90--120 & $\sim$100 \\
+El GPU, gövde CPU, paralel & 9 & 110--120 & 70--90 & 80--100 \\
+Gövde iki karede bir (yeni) & \multicolumn{4}{c}{\olculecek{tablette}} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+15 FPS hedefine ulaşılamamasının nedeni, her karede iki ayrı derin ağın (el ve gövde)
+çalışmasıdır. Gövdenin iki karede bir çıkarılması bu yükü azaltmaktadır. Daha ileri
+iyileştirmeler için analiz görüntüsünün küçültülmesi ya da el modelinin bir önceki
+karedeki el konumundan başlatılması denenebilir. Öte yandan eğitimde uygulanan zamansal
+seyreltme sayesinde model 10 FPS'lik girdide de çalışmaktadır: AUTSL test videoları
+10 FPS'e seyreltildiğinde doğruluk yalnızca 0,8 puan düşmektedir (BiGRU, yüzde 88,00'den
+yüzde 87,22'ye).
+
+\subsection{Kayıtlı veri ile canlı kullanım arasındaki fark}
+
+Proje boyunca yapılan canlı denemelerde tahmin güvenlerinin kayıtlı veriye göre
+belirgin biçimde düştüğü gözlenmiştir. Bu farkı ayırmak için şu denemeler yapılmıştır:
+
+\begin{itemize}
+  \item \textbf{Öz-test:} Kayıtlı noktalar telefonda sınıflandırıldığında Python ile
+        yüzde 99,5 aynı tahmin alınmıştır. Yani sorun ön işleme ya da modelin
+        dönüşümünde değildir.
+  \item \textbf{Video dosyasından telefon çıkarımı:} AUTSL videoları kamerasız olarak
+        telefondaki MediaPipe zincirinden geçirildiğinde 14 videodan 10'u doğru
+        tanınmıştır (yüzde 71; aynı kliplerde Python yüzde 81,7). Telefon ısındığı için
+        deneme yarıda kesilmiş, örnek sayısı az kalmıştır.
+  \item \textbf{Segmentleme:} 10 FPS'e seyreltilmiş AUTSL videolarında bölütleme
+        kuralı doğruluğu bozmamaktadır (yüzde 89--90).
+  \item \textbf{Kullanıcının işareti bilmesi:} İlk canlı denemeleri işaret dili
+        bilmeyen ekip üyeleri yapmış, bazı denemelerde sözlükte olmayan işaretler
+        (örneğin harfler) denenmiştir. Örnek hareket animasyonu bu nedenle eklenmiştir.
+\end{itemize}
+
+Bu bulgular farkın büyük ölçüde girdinin kendisinden (kişinin işareti doğru yapması,
+kameraya uzaklık, ışık, kamera açısı) kaynaklandığını düşündürmektedir. Gönüllü
+testinde toplanan kayıtlar \texttt{live\_analysis.py} ile AUTSL'ye göre karşılaştırılarak
+bu etkenler sayısal olarak ayrıştırılacaktır. Sonuç: \olculecek{gönüllü testi analizi}.
+
+\subsection{Gönüllü testi}
+
+Gönüllü testi Ek~\ref{EK:Gonullu} içindeki protokole göre ekip dışından katılımcılarla
+yapılmaktadır. Her katılımcı uygulamadaki test ekranında rastgele seçilmiş 30 kelimeyi
+örnek hareketi izledikten sonra kameraya yapmaktadır.
+
+\begin{table}[H]
+\centering
+\caption{Gönüllü testi sonuçları}
+\label{tab:gonullu}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+\textbf{Katılımcı} & \textbf{Deneme} & \textbf{Top-1 (\%)} & \textbf{Top-3 (\%)} \\
+\midrule
+\multicolumn{4}{c}{\olculecek{katılımcı sonuçları}} \\
+\bottomrule
+\end{tabular}
+\end{table}
